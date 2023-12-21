@@ -343,6 +343,11 @@ func (dc *defaultConsumer) subscriptionAutomatically(topic string) {
 func (dc *defaultConsumer) updateTopicSubscribeInfo(topic string, mqs []*primitive.MessageQueue) {
 	_, exist := dc.subscriptionDataTable.Load(topic)
 	if exist {
+		rlog.Info("defaultConsumer updateTopicSubscribeInfo", map[string]interface{}{
+			rlog.LogKeyConsumerGroup: dc.consumerGroup,
+			"mqSize":                 len(mqs),
+			"mqInfo":                 mqs,
+		})
 		dc.topicSubscribeInfoTable.Store(topic, mqs)
 	}
 }
@@ -367,6 +372,8 @@ func (dc *defaultConsumer) doBalanceIfNotPaused() {
 }
 
 func (dc *defaultConsumer) doBalance() {
+	rlog.Info("MessageQueue start dobalance", map[string]interface{}{
+		rlog.LogKeyConsumerGroup: dc.consumerGroup})
 	dc.subscriptionDataTable.Range(func(key, value interface{}) bool {
 		topic := key.(string)
 		v, exist := dc.topicSubscribeInfoTable.Load(topic)
@@ -426,6 +433,16 @@ func (dc *defaultConsumer) doBalance() {
 			if changed {
 				dc.mqChanged(topic, mqAll, allocateResult)
 				rlog.Info("MessageQueue do balance done", map[string]interface{}{
+					rlog.LogKeyConsumerGroup: dc.consumerGroup,
+					rlog.LogKeyTopic:         topic,
+					"clientID":               dc.client.ClientID(),
+					"mqAllSize":              len(mqAll),
+					"cidAllSize":             len(cidAll),
+					"rebalanceResultSize":    len(allocateResult),
+					"rebalanceResultSet":     allocateResult,
+				})
+			} else {
+				rlog.Info("MessageQueue do balance done without change", map[string]interface{}{
 					rlog.LogKeyConsumerGroup: dc.consumerGroup,
 					rlog.LogKeyTopic:         topic,
 					"clientID":               dc.client.ClientID(),

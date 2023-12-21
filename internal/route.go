@@ -384,6 +384,7 @@ func (s *namesrvs) findBrokerVersion(brokerName, brokerAddr string) int32 {
 }
 
 func (s *namesrvs) queryTopicRouteInfoFromServer(topic string) (*TopicRouteData, error) {
+	nameServer := ""
 	request := &GetRouteInfoRequestHeader{
 		Topic: topic,
 	}
@@ -405,8 +406,8 @@ func (s *namesrvs) queryTopicRouteInfoFromServer(topic string) (*TopicRouteData,
 	for i := 0; i < s.Size(); i++ {
 		rc := remote.NewRemotingCommand(ReqGetRouteInfoByTopic, request, nil)
 		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-		response, err = s.nameSrvClient.InvokeSync(ctx, s.getNameServerAddress(), rc)
-
+		nameServer = s.getNameServerAddress()
+		response, err = s.nameSrvClient.InvokeSync(ctx, nameServer, rc)
 		if err == nil {
 			cancel()
 			break
@@ -436,6 +437,10 @@ func (s *namesrvs) queryTopicRouteInfoFromServer(topic string) (*TopicRouteData,
 			})
 			return nil, err
 		}
+		rlog.Info("queryTopicRouteInfoFromServer sucess", map[string]interface{}{
+			"topic":      topic,
+			"nameServer": nameServer,
+		})
 		return routeData, nil
 	case ResTopicNotExist:
 		return nil, errors.ErrTopicNotExist
