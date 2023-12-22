@@ -437,7 +437,7 @@ func (s *namesrvs) queryTopicRouteInfoFromServer(topic string) (*TopicRouteData,
 			})
 			return nil, err
 		}
-		rlog.Info("queryTopicRouteInfoFromServer sucess", map[string]interface{}{
+		rlog.Info("queryTopicRouteInfoFromServer success", map[string]interface{}{
 			"topic":      topic,
 			"nameServer": nameServer,
 		})

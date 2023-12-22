@@ -347,6 +347,7 @@ func (dc *defaultConsumer) updateTopicSubscribeInfo(topic string, mqs []*primiti
 			rlog.LogKeyConsumerGroup: dc.consumerGroup,
 			"mqSize":                 len(mqs),
 			"mqInfo":                 mqs,
+			"clientId":               dc.client.ClientID(),
 		})
 		dc.topicSubscribeInfoTable.Store(topic, mqs)
 	}
@@ -373,7 +374,9 @@ func (dc *defaultConsumer) doBalanceIfNotPaused() {
 
 func (dc *defaultConsumer) doBalance() {
 	rlog.Info("MessageQueue start dobalance", map[string]interface{}{
-		rlog.LogKeyConsumerGroup: dc.consumerGroup})
+		rlog.LogKeyConsumerGroup: dc.consumerGroup,
+		"clientID":               dc.client.ClientID(),
+	})
 	dc.subscriptionDataTable.Range(func(key, value interface{}) bool {
 		topic := key.(string)
 		v, exist := dc.topicSubscribeInfoTable.Load(topic)
@@ -402,6 +405,7 @@ func (dc *defaultConsumer) doBalance() {
 				rlog.Warning("do balance in group failed, get consumer id list failed", map[string]interface{}{
 					rlog.LogKeyConsumerGroup: dc.consumerGroup,
 					rlog.LogKeyTopic:         topic,
+					"clientID":               dc.client.ClientID(),
 				})
 				return true
 			}

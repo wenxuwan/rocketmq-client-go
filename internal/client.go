@@ -454,9 +454,6 @@ func (c *rmqClient) Start() {
 			for {
 				select {
 				case <-ticker.C:
-					rlog.Info("The RMQClient start update topic route info", map[string]interface{}{
-						"clientID": c.ClientID(),
-					})
 					op()
 				case <-c.done:
 					rlog.Info("The RMQClient stopping update topic route info.", map[string]interface{}{
@@ -717,9 +714,15 @@ func (c *rmqClient) UpdateTopicRouteInfo() {
 		return true
 	})
 
+	rlog.Info("The RMQClient start update topic route info", map[string]interface{}{
+		"clientID":           c.ClientID(),
+		"allTopics":          allTopics,
+		"publishTopicSet":    publishTopicSet,
+		"subscribedTopicSet": subscribedTopicSet,
+	})
+
 	for topic := range allTopics {
 		data, changed, _ := c.GetNameSrv().UpdateTopicRouteInfo(topic)
-
 		if publishTopicSet[topic] {
 			c.UpdatePublishInfo(topic, data, changed)
 		}
@@ -727,7 +730,6 @@ func (c *rmqClient) UpdateTopicRouteInfo() {
 		if subscribedTopicSet[topic] {
 			c.updateSubscribeInfo(topic, data, changed)
 		}
-
 	}
 }
 
@@ -888,6 +890,7 @@ func (c *rmqClient) RebalanceIfNotPaused() {
 		return true
 	})
 	rlog.Info("RebalanceIfNotPaused finished", map[string]interface{}{
+		"clientID":  c.ClientID(),
 		"consumers": consumers})
 }
 
